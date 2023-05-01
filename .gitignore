@@ -1,3 +1,6 @@
+# Hopsworks API Key
+.hw_api_key
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
