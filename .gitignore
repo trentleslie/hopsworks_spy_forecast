@@ -1,5 +1,12 @@
-# Hopsworks API Key
+# API Keys
 .hw_api_key
+api_key.py
+
+# CSVs
+*.csv
+
+# notebooks
+*.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
