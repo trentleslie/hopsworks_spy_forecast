@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import time
 from api_key import alpha_api_key
+import json
 
 def fetch_price_data(symbol):
     url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={symbol}&outputsize=full&apikey={alpha_api_key}"
@@ -13,8 +14,17 @@ def fetch_price_data(symbol):
 def fetch_technical_data(symbol, tech):
     url = f"https://www.alphavantage.co/query?function={tech[0]}&symbol={symbol}&interval=daily&time_period={tech[1]}&series_type=close&apikey={alpha_api_key}"
     r = requests.get(url)
-    data = r.json()
+    #print(f"Response content for {symbol} and {tech}:")
+    #print(r.content)
+    
+    try:
+        data = r.json()
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON for {symbol} and {tech}: {e}")
+        return None
+    
     df_tech = pd.DataFrame(data[tech[2]]).T
+    
     return df_tech
 
 def main():
@@ -32,7 +42,7 @@ def main():
             df_price = df_price.merge(df_tech, how='inner', left_index=True, right_index=True)
             time.sleep(1)
 
-        df_price.to_csv(f"./data/raw/{symbol}_daily.csv")
+        df_price.to_csv(f"../data/raw/{symbol}_daily.csv")
         print(f"{symbol} saved")
 
 if __name__ == "__main__":

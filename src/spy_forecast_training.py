@@ -3,6 +3,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import time
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -13,11 +14,13 @@ from sklearn.metrics import (
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LogisticRegression
+from sklearn.impute import SimpleImputer
+from sklearn.feature_selection import SelectPercentile, chi2
 
 import hopsworks
 from hsml.schema import Schema
 from hsml.model_schema import ModelSchema
-from sklearn.externals import joblib
+import joblib
 
 def process_data(file_path):
     data = pd.read_csv(file_path, index_col=0)
@@ -29,6 +32,32 @@ def process_data(file_path):
     columns_to_drop = ['close_20', 'open_20', 'high_20', 'low_20']
     X_train = train_data.drop(columns=columns_to_drop)
     X_test = test_data.drop(columns=columns_to_drop)
+    
+    # Hopsworks train_test_split
+    #proj = hopsworks.login()
+    #fs = proj.get_feature_store()
+    
+    #fg_spy = fs.get_feature_group(name="historical_data_21", version=1)
+
+    #query = fg_spy.select_except(["id","high_20","low_20","open_20"])
+    
+    #try:
+    #    fv = fs.get_feature_view(name="historical_data_21", version=1)
+    #except:
+    #    fv = fs.create_feature_view(name="historical_data_21", 
+    #                    version=1,
+    #                        description="Historical Data_21",
+    #                        labels=["close_20"],
+    #                        query=query
+    #                    )
+    
+    #start_time = time.time()
+    #X_train, X_test, y_train, y_test = fv.train_test_split(test_size=0.2)
+    #print("Get Random Split Training Data in %s seconds ---" % (time.time() - start_time))
+    
+    # Map values > 0 to 1 and values <= 0 to 0
+    y_train['close_20'] = y_train['close_20'].apply(lambda x: 1 if x > 0 else 0)
+    y_test['close_20'] = y_test['close_20'].apply(lambda x: 1 if x > 0 else 0)
 
     return X_train, X_test, y_train, y_test
 
