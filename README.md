@@ -3,15 +3,15 @@
 project/
 │
 ├── src/
-│   ├── 1_alpha_vantage.py
-│   ├── 2_process_raw_data.py
-│   ├── 3_spy_forecast_training.py
+│   ├── alpha_vantage.py
+│   ├── process_raw_data.py
+│   ├── spy_forecast_training.py
 │   └── main.py
 │
 ├── tests/
-│   ├── test_1_alpha_vantage.py
-│   ├── test_2_process_raw_data.py
-│   ├── test_3_spy_forecast_training.py
+│   ├── test_load_data.py
+│   ├── test_preprocess_data.py
+│   ├── test_train_model.py
 │   └── test_main.py
 │
 └── data/
