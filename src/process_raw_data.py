@@ -81,5 +81,49 @@ def plot_histograms(ticker_stats_mean, ticker_stats_std, window_size):
     ticker_stats_std.hist(column='sma', bins=10)
     ticker_stats_std.hist(column='ema', bins=10)
 
+def process_window_sizes(window_sizes, ticker_list):
+    for window_size in window_sizes:
+        print(f"Starting window size: {window_size}")
+
+        for ticker in ticker_list:
+            flattened_df = create_flattened_dataframe(ticker, window_size)
+            flattened_df.to_csv(f"../data/interim/{ticker}_{window_size}_flattened.csv")
+            print(f"{ticker} {window_size} flattened")
+
+        all_data_combined = combine_flattened_data(window_size)
+        all_data_combined.to_csv(f"../data/processed/all_processed_{window_size}.csv")
+        print(f"Window {window_size} data combined")
+        print(all_data_combined.shape)
+
+
+def create_flattened_dataframe(ticker, window_size):
+    flattened_df = pd.DataFrame()
+    df = pd.read_csv(f"../data/interim/{ticker}_{window_size}_processed.csv").drop(['Unnamed: 0'], axis=1)
+
+    for i in range(df.shape[0] - window_size + 1):
+        df_window = df.iloc[i:i + window_size,].reset_index(drop=True)
+        df_window.index = df_window.index.map(str)
+        df_window = df_window.unstack().to_frame().sort_index(level=1).T
+        df_window.columns = df_window.columns.map('_'.join)
+        flattened_df = pd.concat([flattened_df, df_window], axis=0)
+
+    return flattened_df
+
+def combine_flattened_data(window_size):
+    onlyfiles_flattened = [f for f in listdir('../data/interim/') if isfile(join('../data/interim/', f))]
+    onlyfiles_flattened = list(filter(lambda thisfilename: f"{window_size}_flattened.csv" in thisfilename, onlyfiles_flattened))
+
+    all_data_combined = pd.DataFrame()
+
+    for filename in onlyfiles_flattened:
+        ticker = filename.split('_')[0]
+        all_data_combined = pd.concat([all_data_combined, pd.read_csv(f"../data/interim/{ticker}_{window_size}_flattened.csv").drop(['Unnamed: 0'], axis=1)])
+
+    all_data_combined = all_data_combined.drop([f"volume_{window_size-1}", f"rsi_{window_size-1}", f"sma_{window_size-1}", f"ema_{window_size-1}"], axis=1)
+
+    return all_data_combined
+
 # Main execution
 ticker_list = process_files(window_sizes)
+process_window_sizes(window_sizes, ticker_list)
+
